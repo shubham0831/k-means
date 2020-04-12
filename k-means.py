@@ -1,5 +1,8 @@
+#version $
+#author:  Shubham,Naman 
 import numpy as np
 import csv
+
 
 def k_means (k):
     #getting all the files
