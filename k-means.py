@@ -1,6 +1,6 @@
-#this is to test github merger and push
 import numpy as np
 import csv
+
 
 def k_means (k):
     #getting all the files
