@@ -1,5 +1,3 @@
-#version $
-#author:  Shubham,Naman 
 import numpy as np
 import csv
 
