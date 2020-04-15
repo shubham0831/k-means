@@ -1,5 +1,6 @@
 from collections import defaultdict
 import numpy as np
+import logging
 import csv
 
 '''
@@ -8,80 +9,126 @@ animals is a dict, with animal name as the key and the coordinates of that
     particular animal as the values
 cluster is a dict, which contain the animal name which is also the key in the
     animals dict
+'''
+'''
+for epoch in range(epochs):
+    for key in features.keys():
+        distance = []
+        for i in range(len(centroids)):
+            distance.append(euclidean_distance(centroids[i], features[key]))
+            cluster_id = distance.index(min(distance))
+            clusters[cluster_id].append(key)
+    centroids = find_average(clusters, centroids, features)
+    clusters = set_clusters(k)
+    print("after " +str(epoch) + " iter")
+    for k in clusters.values():
+        print(k)
+        print("---------")
+    print("--------------------------------------------------------")
 
+
+
+for i in range(len(clusters)):
+    print("len of " +str(i) +" cluster is " +str(len(clusters[i])))
+    if len(clusters[i]) == 0:
+        break
+    else:
+        for b in range(len(clusters[i])):
+            sum = 0
+            for k in features.keys():
+                if k in clusters[i]:
+                    sum += float(features[k][b])
+            sum = sum/len(clusters[i])
+            new_points[i].append(sum)
 '''
 
+'''
+    for key, values in animals.items():
+        distance = []
+        for i in range(len(centroids)):
+            distance.append(euclidean_distance(centroids[i], values))
+        cluster_id = distance.index(min(distance))
+        clusters[cluster_id].append(key)
+        print(clusters)
+        print("-------------")
+'''
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.debug('start of program')
 def k_means (k):
+    logging.debug("in k-means")
     #getting all the files
     files = ['animals', 'fruits', 'veggies', 'countries']
     animals = create_dict(open_file(files[0]))
     fruits = create_dict(open_file(files[1]))
     veggies = create_dict(open_file(files[2]))
     countries = create_dict(open_file(files[3]))
+    features = merge_dict(animals, fruits, veggies,countries)
 
+    num_clusters = k
 
     #creating random points for centroids
     centroids = np.random.rand(k,300)
     #getting empty clusters
-    clusters = get_clusters(k)
+    clusters = set_clusters(k)
+    empty_cluster = set_clusters(k)
 
-    for key in animals.keys():
-        distance = []
-        for i in range(len(centroids)):
-            distance.append(euclidean_distance(centroids[i], animals[key]))
-        cluster_id = distance.index(min(distance))
-        clusters[cluster_id].append(key)
+    epochs = 30
 
-    #print(clusters)
-    #print(len(clusters))
-    #print(len(centroids))
 
-'''
-TODO: 1)Check if the animal key is in the cluster
-      2)If animal_key is in the cluster then find out the cluster_key
-      3)cluster_key will be the same as the centroids position in the 2d centroid shift_array
-      4)take the average of all animals in the clusters
-      5)averaging will return 300 points aka the coordinates
-      6)set the average as the new val of the cluster by using cluster key
-'''
-def find_average(cluster, centroid):
-    centroids = np.random.rand(2,3)
-    clusters = {0:['a','b', 'i'], 1:['c', 'j']}
-    ani = {'a':[1,2,3], 'b':[4,5,6], 'c':[2,4,6]}
-    fru = {'i' : [10,20,30], "j":[5,8,9]}
-    new_points = [[],[]]
+    for epoch in range(epochs):
+        print(epoch)
+        for key in features.keys():
+            distance = []
+            for i in range(len(centroids)):
+                distance.append(euclidean_distance(centroids[i], features[key]))
+            cluster_id = distance.index(min(distance))
+            clusters[cluster_id].append(key)
+        #prob in below line, code never goes into find_average
+        centroids = find_average(clusters, centroids, features)
+        if epoch != epochs-1:
+            for k, v in clusters.items():
+                clusters[k] = []
+        else:
+            for keys in clusters.keys():
+                print(clusters[keys])
+                print("\n\n\n\n\n\n")
 
-    for i in range(len(clusters)):
-        for b in range(3):
-            sum = 0
-            for k in ani.keys():
+
+
+def merge_dict(a,b,c,d):
+    res = {**a, **b, **c, **d}
+    return res
+
+def find_average(clusters, centroids, features):
+#    logging.debug("in avg")
+    new_points = []
+    try:
+        for i in range(len(clusters)):
+            sum = np.zeros([300])
+            for k,v in features.items():
                 if k in clusters[i]:
-                    sum += ani[k][b]
-            for k in fru.keys():
-                if k in clusters[i]:
-                    sum += fru[k][b]
-
+                    feature_vector = np.array(features[k], dtype = 'float')
+                    sum += feature_vector
             sum = sum/len(clusters[i])
-            new_points[i].append(sum)
-
-    for i in centroids:
-        print(i)
+            new_points.append(sum)
+    except :
+        opopopopo = 1
 
     for i in range(len(centroids)):
         centroids[i] = new_points[i]
 
-    print("after")
+#    logging.debug("avg ended")
 
-    for i in centroids:
-        print(i)
-
-
+    return centroids
 
 def euclidean_distance(centroid, data):
+#    logging.debug("in eucl distance")
     sum = 0
     for i in range(len(data)):
         sum += abs(float(data[i]) - centroid[i])
     distance = (sum)**0.5
+#    logging.debug("euc distance ended")
     return distance
 
 
@@ -90,10 +137,12 @@ def open_file(file_name):
         file_name = list(csv.reader(f, delimiter = ' '))
     return file_name
 
-def get_clusters(k):
+def set_clusters(k):
+#    logging.debug("set_cluster")
     clusters = {}
     for i in range(k):
         clusters.setdefault(i, [])
+#    logging.debug("set_cluster ended")
     return clusters
 
 def shift_array(arr):
@@ -116,51 +165,11 @@ def create_dict(animals):
 
     return dict
 
-k = 2
-#k_means(k)
-centroids = np.random.rand(k,3)
-clusters = {0:[1,2], 1:[3]}
-find_average(clusters, centroids)
-'''
-d = distance.index(min(distance))
+epochs = 20
+k = 6
+k_means(k)
 
-append values to the dict code:
-        clusters[d].append(animals[i])
-    where d is the key of the dictionary aka the cluster number
-          i is the animal whose euclidean_distance we just calculated
-
-'''
-
-'''
-for i in range(len(animals)):
-    distance = []
-    for k in range(len(axis)):
-        distance.append(euclidean_distance(axis[k], animals[i]))
-    #print("printing distance for " +str(animals[i][-1]))
-    #print("minimum distance for " +str(animals[i][-1]) + " is " +str(min(distance)))
-    cluster_id = distance.index(min(distance))
-    #print("that means the cluster which " +str(animals[i][-1]) + " will go to is " + str(cluster_id))
-    clusters[cluster_id].append(animals[i][-1])
-'''
-
-'''  for key in fruits.keys():
-        distance = []
-        for i in range(len(centroids)):
-            distance.append(euclidean_distance(centroids[i], fruits[key]))
-        cluster_id = distance.index(min(distance))
-        clusters[cluster_id].append(key)
-
-    for key in veggies.keys():
-        distance = []
-        for i in range(len(centroids)):
-            distance.append(euclidean_distance(centroids[i], veggies[key]))
-        cluster_id = distance.index(min(distance))
-        clusters[cluster_id].append(key)
-
-    for key in countries.keys():
-        distance = []
-        for i in range(len(centroids)):
-            distance.append(euclidean_distance(centroids[i], countries[key]))
-        cluster_id = distance.index(min(distance))
-        clusters[cluster_id].append(key)
-'''
+clusters = {0:['a','b'], 1:['c']}
+centroids = np.random.rand(2,3)
+features = {'a':[1,2,3], 'b':[4,6,7], 'c':[10,11,12]}
+#find_average(clusters, centroids, features)
