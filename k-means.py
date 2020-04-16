@@ -10,53 +10,8 @@ animals is a dict, with animal name as the key and the coordinates of that
 cluster is a dict, which contain the animal name which is also the key in the
     animals dict
 '''
-'''
-for epoch in range(epochs):
-    for key in features.keys():
-        distance = []
-        for i in range(len(centroids)):
-            distance.append(euclidean_distance(centroids[i], features[key]))
-            cluster_id = distance.index(min(distance))
-            clusters[cluster_id].append(key)
-    centroids = find_average(clusters, centroids, features)
-    clusters = set_clusters(k)
-    print("after " +str(epoch) + " iter")
-    for k in clusters.values():
-        print(k)
-        print("---------")
-    print("--------------------------------------------------------")
 
-
-
-for i in range(len(clusters)):
-    print("len of " +str(i) +" cluster is " +str(len(clusters[i])))
-    if len(clusters[i]) == 0:
-        break
-    else:
-        for b in range(len(clusters[i])):
-            sum = 0
-            for k in features.keys():
-                if k in clusters[i]:
-                    sum += float(features[k][b])
-            sum = sum/len(clusters[i])
-            new_points[i].append(sum)
-'''
-
-'''
-    for key, values in animals.items():
-        distance = []
-        for i in range(len(centroids)):
-            distance.append(euclidean_distance(centroids[i], values))
-        cluster_id = distance.index(min(distance))
-        clusters[cluster_id].append(key)
-        print(clusters)
-        print("-------------")
-'''
-
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-logging.debug('start of program')
 def k_means (k):
-    logging.debug("in k-means")
     #getting all the files
     files = ['animals', 'fruits', 'veggies', 'countries']
     animals = create_dict(open_file(files[0]))
@@ -101,7 +56,6 @@ def merge_dict(a,b,c,d):
     return res
 
 def find_average(clusters, centroids, features):
-#    logging.debug("in avg")
     new_points = []
     try:
         for i in range(len(clusters)):
@@ -118,17 +72,13 @@ def find_average(clusters, centroids, features):
     for i in range(len(centroids)):
         centroids[i] = new_points[i]
 
-#    logging.debug("avg ended")
-
     return centroids
 
 def euclidean_distance(centroid, data):
-#    logging.debug("in eucl distance")
     sum = 0
     for i in range(len(data)):
         sum += abs(float(data[i]) - centroid[i])
-    distance = (sum)**0.5
-#    logging.debug("euc distance ended")
+    distance = ((sum)**0.5)
     return distance
 
 
@@ -138,11 +88,9 @@ def open_file(file_name):
     return file_name
 
 def set_clusters(k):
-#    logging.debug("set_cluster")
     clusters = {}
     for i in range(k):
         clusters.setdefault(i, [])
-#    logging.debug("set_cluster ended")
     return clusters
 
 def shift_array(arr):
@@ -166,7 +114,7 @@ def create_dict(animals):
     return dict
 
 epochs = 20
-k = 6
+k = 3
 k_means(k)
 
 clusters = {0:['a','b'], 1:['c']}
