@@ -1,4 +1,5 @@
 from collections import defaultdict
+import matplotlib.pyplot as plt
 import numpy as np
 import logging
 import csv
@@ -6,10 +7,26 @@ import csv
 '''
 centroids contain the coordinates of the centroids
 animals is a dict, with animal name as the key and the coordinates of that
-    particular animal as the values
+   particular animal as the values
 cluster is a dict, which contain the animal name which is also the key in the
-    animals dict
+   animals dict
 '''
+
+
+def factorial (number):
+    fact = 1
+    for i in range(number, 0, -1):
+        fact = i*fact
+    return fact
+
+def total_trues(number):
+    trues = factorial(number)/(factorial(2)*(factorial(number-2)))
+    return int(trues)
+
+def print_clusters(clusters):
+    for k in clusters.keys():
+        print(clusters[k])
+        print("\n\n\n")
 
 def k_means (k):
     #getting all the files
@@ -28,27 +45,92 @@ def k_means (k):
     clusters = set_clusters(k)
     empty_cluster = set_clusters(k)
 
-    epochs = 30
+    epochs = 2
 
 
     for epoch in range(epochs):
-        print(epoch)
+        #print(epoch)
         for key in features.keys():
             distance = []
             for i in range(len(centroids)):
                 distance.append(euclidean_distance(centroids[i], features[key]))
+                #distance.append(manhattan_distance(centroids[i], features[key]))
+                #distance.append(cosine_similarity(centroids[i], features[key]))
             cluster_id = distance.index(min(distance))
             clusters[cluster_id].append(key)
-        #prob in below line, code never goes into find_average
         centroids = find_average(clusters, centroids, features)
         if epoch != epochs-1:
             for k, v in clusters.items():
                 clusters[k] = []
-        else:
-            for keys in clusters.keys():
-                print(clusters[keys])
-                print("\n\n\n\n\n\n")
 
+    #print_clusters(clusters)
+
+    p,r,f = metric(clusters, animals, fruits, veggies, countries)
+    return p,r,f
+
+def metric(clusters, animals, fruits, veggies, countries):
+    total_animals = len(animals)
+    total_fruits = len(fruits)
+    total_veggies = len(veggies)
+    total_countries = len(countries)
+
+    precisions = 0
+    recalls = 0
+
+    for k, values in clusters.items():
+        ani_clusters = fruits_clusters = veggies_cluster = countries_cluster = 0
+        for v in values:
+            if v in animals:
+                #print(1)
+                ani_clusters += 1
+            elif v in fruits:
+                #print(2)
+                fruits_clusters += 1
+            elif v in veggies:
+                #print(3)
+                veggies_cluster += 1
+            elif v in countries:
+                #print(4)
+                countries_cluster += 1
+        true_positive = max(ani_clusters, fruits_clusters, veggies_cluster, countries_cluster)
+        cluster_size = len(clusters[k])
+
+        if true_positive == ani_clusters:
+            all_positive = total_animals
+        elif true_positive == fruits_clusters:
+            all_positive = total_fruits
+        elif true_positive == veggies_cluster:
+            all_positive = total_veggies
+        elif true_positive == countries_cluster:
+            all_positive = total_countries
+
+        p = precision(true_positive, cluster_size)
+        r = recall(true_positive, all_positive)
+        precisions += p
+        recalls += r
+        #print("precision of " +str(k) + " cluster is " +str(p))
+        #print("recall of " +str(k) + " cluster is " +str(r))
+
+    precisions = precisions/len(clusters)
+    recalls = recalls/len(clusters)
+    f_scores = f_score(precisions,recalls)
+    return precisions, recalls, f_scores
+
+def precision(true_positive, cluster_size):
+    try:
+        p = true_positive/cluster_size
+    except ZeroDivisionError:
+        p = 1
+    return p
+
+def recall(true_positive, all_positive):
+    r = true_positive/all_positive
+    return r
+
+def f_score(p, r):
+    #p is precision, r is recall
+    f = (2*p*r)/(p+r)
+    return f
 
 
 def merge_dict(a,b,c,d):
@@ -77,8 +159,30 @@ def find_average(clusters, centroids, features):
 def euclidean_distance(centroid, data):
     sum = 0
     for i in range(len(data)):
-        sum += abs(float(data[i]) - centroid[i])
+        sum += abs((float(data[i]) - centroid[i])**2)
     distance = ((sum)**0.5)
+    return distance
+
+def manhattan_distance(centroid, data):
+    sum = 0
+    for i in range(len(data)):
+        sum += abs(float(data[i]) - centroid[i])
+    distance = sum
+    return distance
+
+def cosine_similarity(centroid, data):
+    l_sum = 0
+    r_sum = 0
+    t_sum = 0
+    for i in range(len(data)):
+        t_product = abs(float(data[i])*centroid[i])
+        t_sum += t_product
+        l_sum += abs(float(data[i])**2)
+        r_sum += abs(centroid[i]**2)
+
+    l_sum = l_sum**0.5
+    r_sum = r_sum**0.5
+    distance = t_sum/(l_sum*r_sum)
     return distance
 
 
@@ -113,11 +217,28 @@ def create_dict(animals):
 
     return dict
 
-epochs = 20
+def plot_graph(p,r,f,k):
+    plt.plot(k, p, label = "precision")
+    plt.plot(k, r, label = "recall")
+    plt.plot(k, f, label = "f-score")
+    plt.ylabel("Precision, Recall and F-score")
+    plt.xlabel("K")
+    plt.legend()
+    plt.show()
+    print('aaaaaa')
+
 k = 3
 k_means(k)
+precisions = []
+recalls = []
+f_scores = []
+ks = []
 
-clusters = {0:['a','b'], 1:['c']}
-centroids = np.random.rand(2,3)
-features = {'a':[1,2,3], 'b':[4,6,7], 'c':[10,11,12]}
-#find_average(clusters, centroids, features)
+for i in range(10):
+    k = i+1
+    p,r,f = k_means(k)
+    ks.append(k)
+    precisions.append(p)
+    recalls.append(r)
+    f_scores.append(f)
+plot_graph(precisions, recalls, f_scores, ks)
