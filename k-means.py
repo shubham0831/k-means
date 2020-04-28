@@ -1,7 +1,7 @@
 from collections import defaultdict
+from numpy.linalg import norm
 import matplotlib.pyplot as plt
 import numpy as np
-import logging
 import csv
 
 '''
@@ -28,14 +28,32 @@ def print_clusters(clusters):
         print(clusters[k])
         print("\n\n\n")
 
-def k_means (k):
+
+def normalize(features):
+    for k in features.keys():
+        l2 = norm(features[k])
+        for i in range(len(features[k])):
+            features[k][i] = float(features[k][i])/l2
+    return features
+
+def find_distance(centroid, features, distance):
+    if distance == 1:
+        return euclidean_distance(centroid, features)
+    elif distance == 2:
+        return manhattan_distance(centroid, features)
+    else :
+        return cosine_similarity(centroid, features)
+
+def k_means (k, dist, nor):
     #getting all the files
     files = ['animals', 'fruits', 'veggies', 'countries']
     animals = create_dict(open_file(files[0]))
     fruits = create_dict(open_file(files[1]))
     veggies = create_dict(open_file(files[2]))
     countries = create_dict(open_file(files[3]))
-    features = merge_dict(animals, fruits, veggies,countries)
+    features = merge_dict(animals, fruits, veggies, countries)
+    if nor == 1:
+        features = normalize(features)
 
     num_clusters = k
 
@@ -45,7 +63,7 @@ def k_means (k):
     clusters = set_clusters(k)
     empty_cluster = set_clusters(k)
 
-    epochs = 2
+    epochs = 20
 
 
     for epoch in range(epochs):
@@ -53,7 +71,8 @@ def k_means (k):
         for key in features.keys():
             distance = []
             for i in range(len(centroids)):
-                distance.append(euclidean_distance(centroids[i], features[key]))
+                distance.append(find_distance(centroids[i], features[key], distance))
+                #distance.append(euclidean_distance(centroids[i], features[key]))
                 #distance.append(manhattan_distance(centroids[i], features[key]))
                 #distance.append(cosine_similarity(centroids[i], features[key]))
             cluster_id = distance.index(min(distance))
@@ -108,8 +127,6 @@ def metric(clusters, animals, fruits, veggies, countries):
         r = recall(true_positive, all_positive)
         precisions += p
         recalls += r
-        #print("precision of " +str(k) + " cluster is " +str(p))
-        #print("recall of " +str(k) + " cluster is " +str(r))
 
     precisions = precisions/len(clusters)
     recalls = recalls/len(clusters)
@@ -149,7 +166,7 @@ def find_average(clusters, centroids, features):
             sum = sum/len(clusters[i])
             new_points.append(sum)
     except :
-        opopopopo = 1
+        blah = 1
 
     for i in range(len(centroids)):
         centroids[i] = new_points[i]
@@ -225,18 +242,26 @@ def plot_graph(p,r,f,k):
     plt.xlabel("K")
     plt.legend()
     plt.show()
-    print('aaaaaa')
+    #print('aaaaaa')
 
-k = 3
-k_means(k)
+#k = 3
+#k_means(k)
 precisions = []
 recalls = []
 f_scores = []
 ks = []
 
+print("press 1 for euclidian distance")
+print("press 2 for manhattan distance")
+print("press 3 for cosine similarity")
+dist = int(input())
+print("press 1 for l2 normalization")
+nor = int(input())
+
+
 for i in range(10):
     k = i+1
-    p,r,f = k_means(k)
+    p,r,f = k_means(k, dist, nor)
     ks.append(k)
     precisions.append(p)
     recalls.append(r)
