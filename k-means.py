@@ -234,12 +234,13 @@ def create_dict(animals):
 
     return dict
 
-def plot_graph(p,r,f,k):
+def plot_graph(p,r,f,k, header):
     plt.plot(k, p, label = "precision")
     plt.plot(k, r, label = "recall")
     plt.plot(k, f, label = "f-score")
     plt.ylabel("Precision, Recall and F-score")
     plt.xlabel("K")
+    plt.title(header)
     plt.legend()
     plt.show()
     #print('aaaaaa')
@@ -256,6 +257,7 @@ print("press 2 for manhattan distance")
 print("press 3 for cosine similarity")
 dist = int(input())
 print("press 1 for l2 normalization")
+print("press anything else for no normalization")
 nor = int(input())
 
 
@@ -266,4 +268,20 @@ for i in range(10):
     precisions.append(p)
     recalls.append(r)
     f_scores.append(f)
-plot_graph(precisions, recalls, f_scores, ks)
+
+if dist == 1:
+    if nor == 1 :
+        header = "Euclidean Distance with L2 Normalization"
+    else :
+        header = "Euclidean Distance"
+elif dist == 2:
+    if nor == 1:
+        header = "Manhattan Distance with L2 Normalization"
+    else:
+        header = "Manhattan Distance"
+elif dist == 3:
+    if nor == 1:
+        header = "Cosine Similarity with L2 Normalization"
+    else:
+        header = "Cosine Similarity"
+plot_graph(precisions, recalls, f_scores, ks, header)
