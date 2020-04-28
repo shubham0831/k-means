@@ -1,7 +1,9 @@
 The following is the code for K-Means clustering with :
+
 	1)Euclidean distance
 	2)Manhattan distance
 	3)Cosine similarity
+	
 as the distances. Choosing which distance to use is up to the user. L2 normalization has also been implemented. 
 
 Regeardless of what the user chooses, the program will run with the value of k ranging from 1-10. Following which a graph will be shown as the output.
